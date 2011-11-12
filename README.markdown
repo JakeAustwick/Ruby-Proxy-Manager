@@ -21,11 +21,11 @@ proxy = manager.get
 #=> "189.122.171.234:6588"
 
 # Check theres a proxy available for use
-web.proxy_available?
+manager.proxy_available?
 #=> true
 
 # Grab two proxies
-proxies = web.grab_multiple(2)
+proxies = manager.grab_multiple(2)
 #=> ["123.6.19.97:8088","201.15.218.158:6588"]
 
 ```
