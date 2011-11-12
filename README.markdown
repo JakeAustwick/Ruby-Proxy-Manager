@@ -20,12 +20,16 @@ manager = ProxyManager.new(prox, delay=15)
 proxy = manager.get
 #=> "189.122.171.234:6588"
 
-# Check theres a proxy available for use
+# Check if there is a proxy available for use
 manager.proxy_available?
 #=> true
 
 # Grab two proxies
 proxies = manager.get_multiple(2)
 #=> ["123.6.19.97:8088","201.15.218.158:6588"]
+
+# Check if there is a proxy available for use
+manager.proxy_available?
+#=> false
 
 ```
