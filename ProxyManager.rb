@@ -18,7 +18,6 @@ class ProxyManager
   end
 
 
-
   def get
     while true
       choices = @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}
@@ -30,8 +29,39 @@ class ProxyManager
         @records[@records.index(proxy)][1] = Time.now.to_i
         break
       end
+
     end
+
     return proxy[0]
+  end
+
+
+  def get_multiple(n)
+    if n > @records.size
+      return nil
+    end
+
+    while true
+      choices = @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}
+
+      if n > choices.size
+        sleep(1)
+      else
+        proxies = choices.sample(n)
+        proxies.each do |proxy|
+          @records[@records.index(proxy)][1] = Time.now.to_i
+        end
+        break
+      end
+
+    end
+
+    return proxies.map!{ |p| p[0]}
+  end
+
+
+  def proxy_available?
+    !@records.select{ |_, delay| delay < (Time.now.to_i - @delay)}.empty?
   end
 
 end
