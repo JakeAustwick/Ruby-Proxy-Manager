@@ -24,6 +24,11 @@ proxy = manager.get
 manager.proxy_available?
 #=> true
 
+# Check how many proxies are available to use
+manager.available_count?
+#=> 2
+
+
 # Grab two proxies
 proxies = manager.get_multiple(2)
 #=> ["123.6.19.97:8088","201.15.218.158:6588"]

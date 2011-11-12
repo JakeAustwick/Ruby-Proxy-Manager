@@ -64,5 +64,8 @@ class ProxyManager
     !@records.select{ |_, delay| delay < (Time.now.to_i - @delay)}.empty?
   end
 
-end
+  def available_count?
+    @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}.size
+  end
 
+end
