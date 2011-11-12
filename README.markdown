@@ -2,7 +2,7 @@
 
 ProxyManager is Ruby class useful for web bots / scrapers or any other http requests whereby you need to limit how frequently you use the same proxy. This stops sites from blocking / filtering your IP.
 
-You can set your own delay for which is the minimum delay between which the same proxy will be returned again, the ideal amount of this depends on how tolerant the site your scraping is, so you'll have to work that out on your own.
+You can set your own delay which is time that you want to leave a proxy to "cool down".The ideal amount for depends on how tolerant the site your scraping is, so you'll have to work that out on your own.
 
 Inspired by the ProxyManager in mattseh's [python-web](https://github.com/mattseh/python-web) library, with a few additions / tweaks.
 
