@@ -29,6 +29,8 @@ manager = ProxyManager.from_proxy_file("path/to/proxy/file.txt", 20)
 
 ```
 
+General examples of class methods
+
 ```ruby
 
 prox = ["123.6.19.97:8088","189.122.171.234:6588","201.15.218.158:6588"]
