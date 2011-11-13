@@ -1,71 +1,84 @@
 class ProxyManager
 
-  def initialize(proxy=true, delay=10)
-    proxies = Array.new
+  class Proxy
+    attr_reader   :address
+    attr_accessor :last_used
 
-    # Use the array of proxies passed in
-    if proxy.is_a? Array
-      proxies = proxy
-    elsif proxy == true
-      # Use a text file in the same directory as a fallback
-      proxies = IO.readlines("proxies.txt").map{ |line| line.strip}
-    else
-      proxies = nil
+    def initialize(address, last_used=nil)
+      @address    = address
+      @last_used  = last_used
     end
 
-    @delay = delay
-    @records = proxies.map{ |element| [element, 0]}
+    def used_since?(time)
+      @last_used && @last_used > time
+    end
+
+    def to_s
+      @address
+    end
   end
 
+  def self.from_proxy_file(path="proxies.txt", delay=10)
+    proxies = IO.readlines(path).map { |line| line.strip }
 
-  def get
-    while true
-      choices = @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}
-
-      if choices.empty?
-        sleep(1)
-      else
-        proxy = choices.sample
-        @records[@records.index(proxy)][1] = Time.now.to_i
-        break
-      end
-
-    end
-
-    return proxy[0]
+    new(proxies, delay)
   end
 
+  def initialize(proxies, delay=10)
+    raise ArgumentError, "proxies must contain at least 1 proxy" if proxies.empty?
+    raise ArgumentError, "proxies must be unique, but duplicates were found: #{duplicates(proxies).join(', ')}" if proxies.size != proxies.uniq.size
 
-  def get_multiple(n)
-    if n > @records.size
-      return nil
-    end
-
-    while true
-      choices = @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}
-
-      if n > choices.size
-        sleep(1)
-      else
-        proxies = choices.sample(n)
-        proxies.each do |proxy|
-          @records[@records.index(proxy)][1] = Time.now.to_i
-        end
-        break
-      end
-
-    end
-
-    return proxies.map!{ |p| p[0]}
+    @addresses  = proxies
+    @delay      = delay
+    @proxies    = proxies.map { |address| Proxy.new(address) }
   end
 
+  def duplicates(list)
+    list.group_by { |e| e }.select { |k,v| v.size > 1 }.map(&:first)
+  end
+
+  #   A proxy that hasn't been used for at least #delay seconds.
+  #   If none is available, the method will block until one becomes available
+  def available_proxy
+    proxy = @proxies.shift
+    @proxies << proxy
+
+    if proxy.last_used then
+      nap_time  = @delay - (Time.now - proxy.last_used)
+      sleep(nap_time) if nap_time > 0
+    end
+    proxy.last_used = Time.now
+
+    proxy
+  end
+
+  #   This will block until n proxies are available
+  def available_proxies(n)
+    return nil if n > @proxies.size
+
+    proxies = @proxies.shift(n)
+    proxy   = proxies.last
+    @proxies.concat(proxies)
+
+    if proxy.last_used then
+      nap_time  = @delay - (Time.now - proxy.last_used)
+      sleep(nap_time) if nap_time > 0
+    end
+    proxies.each do |proxy|
+      proxy.last_used = Time.now
+    end
+
+    proxies
+  end
 
   def proxy_available?
-    !@records.select{ |_, delay| delay < (Time.now.to_i - @delay)}.empty?
+    !@proxies.first.used_since?(Time.now-@delay)
   end
 
-  def available_count?
-    @records.select{ |_, delay| delay < (Time.now.to_i - @delay)}.size
-  end
+  def available_count
+    time  = Time.now-@delay
+    index = @proxies.find_index { |proxy| proxy.used_since?(time) }
 
+    index ? index : @proxies.size
+  end
 end
